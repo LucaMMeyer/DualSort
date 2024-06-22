@@ -1,0 +1,41 @@
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import itertools
+from scipy.io import loadmat
+from keras.callbacks import EarlyStopping
+
+e1 = 20000   #epochs
+b1 = 1000    #batch size
+l1 = 0.0001 #learning rate
+p1 = 100     #Earlystopping patience
+z1 = 1      #number of runs
+
+model = tf.keras.Sequential()
+
+model.add(tf.keras.layers.Dense(units=100, activation='relu', name='HL1', input_shape=(w1,))) 
+model.add(tf.keras.layers.BatchNormalization()) 
+model.add(tf.keras.layers.Dropout(0.2))
+
+model.add(tf.keras.layers.Dense(units=100, activation='relu', name='HL2')) 
+model.add(tf.keras.layers.BatchNormalization()) 
+model.add(tf.keras.layers.Dropout(0.2))
+
+output1 = model.layers[-1].output
+output1 = tf.keras.layers.Dense(units=4, name='OL1', activation='softmax')(output1)
+output2 = model.layers[-1].output
+output2 = tf.keras.layers.Dense(units=21, name='OL2', activation='softmax')(output2)
+model = tf.keras.Model(inputs=model.input, outputs=[output1, output2])
+ 
+adam = tf.keras.optimizers.Adam(learning_rate=l1)
+
+# compile model
+model.compile(optimizer = 'adam', 
+              loss = 'categorical_crossentropy', 
+              metrics = ['acc'])
+
+model.summary()
+
+early_stopping = EarlyStopping(monitor='val_loss', patience=p1) 
+history = model.fit(x_train, [y_train_group, y_train_time], epochs=e1, batch_size=b1, validation_split=0.2, callbacks=early_stopping)
